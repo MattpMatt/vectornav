@@ -171,7 +171,7 @@ public:
 
     // Magnetic Disturbance Service
     srv_mag_disturb_ = this->create_service<std_srvs::srv::SetBool>(
-      "vectornav/knownmagdisturbance",
+      "vectornav/set_mag_disturb",
       std::bind(&Vectornav::setMagneticDisturbance, this, _1, _2));
 
     // magnetic cal action
