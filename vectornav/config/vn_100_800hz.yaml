@@ -4,7 +4,7 @@
 
 vectornav:
   ros__parameters:
-    port: "/dev/ttyUSB0"
+    port: "/dev/serial/by-id/usb-FTDI_USB-RS232_Cable_FT40B0A0-if00-port0"
     baud: 921600
     adjust_ros_timestamp: True
     reconnect_ms: 500
@@ -34,7 +34,7 @@ vectornav:
     # Binary output register 1
     BO1:
       asyncMode: 1                   # send only on port 1 to save serial bandwidth
-      rateDivisor: 1                 # 800 Hz
+      rateDivisor: 4                 # 800 / 4 Hz
       #
       # TimeStartup
       # bit name         meaning
@@ -58,17 +58,17 @@ vectornav:
       # To get just the calibrated but otherwise uncompensated imu measurements, use these
       # flags:
       # bit: 111
-      #      2109876543210
-      #   s="0001000000001" (switch on bits 0 and 9 only)
+      #     2109876543210
+      # s="0001000000001" (switch on bits 0 and 9 only)
       #
       # python code: convert to hex via:  hex(int("0001000000001", 2)) -> 0x201
       #
       # commonField: 0x7FFF          # cannot request all fields at full frequency
-      commonField: 0x201             # ask for only bare bones IMU data
+      commonField: 0x331              # hex(int("0001100110001", 2)) -> 0x331
       timeField: 0x0000              # TIMEGROUP_NONE
-      imuField: 0x0000               # IMUGROUP_NONE
+      #imuField: 0x0000               # IMUGROUP_NONE
       # set gpsField directly in source to enforce or condition
-      attitudeField: 0x0000          # ATTITUDEGROUP_NONE
+      attitudeField: 0x0000        # ATTITUDEGROUP_NONE
       # set insField directly in source to enforce or condition
       gps2Field: 0x0000              # GPSGROUP_NONE
     # Binary output register 2
@@ -93,10 +93,11 @@ vectornav:
       attitudeField: 0x0000          # ATTITUDEGROUP_NONE
       insField: 0x0000               # INSGROUP_NONE
       gps2Field: 0x0000              # GPSGROUP_NONE
-    frame_id: "vectornav"
+    frame_id: imu_link
 
 vn_sensor_msgs:
   ros__parameters:
+    use_enu: false
     orientation_covariance: [0.01,  0.0,   0.0,
                             0.0,   0.01,  0.0,
                             0.0,   0.0,   0.01]

@@ -23,6 +23,7 @@
 // ROS2
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "std_srvs/srv/set_bool.hpp"
 #include "vectornav_msgs/msg/attitude_group.hpp"
 #include "vectornav_msgs/msg/common_group.hpp"
 #include "vectornav_msgs/msg/gps_group.hpp"
@@ -167,6 +168,11 @@ public:
     pub_attitude_ = this->create_publisher<vectornav_msgs::msg::AttitudeGroup>("vectornav/raw/attitude", 10);
     pub_ins_ = this->create_publisher<vectornav_msgs::msg::InsGroup>("vectornav/raw/ins", 10);
     pub_gps2_ = this->create_publisher<vectornav_msgs::msg::GpsGroup>("vectornav/raw/gps2", 10);
+
+    // Magnetic Disturbance Service
+    srv_mag_disturb_ = this->create_service<std_srvs::srv::SetBool>(
+      "vectornav/knownmagdisturbance",
+      std::bind(&Vectornav::setMagneticDisturbance, this, _1, _2));
 
     // magnetic cal action
     server_mag_cal_ = rclcpp_action::create_server<MagCal>(
@@ -687,6 +693,20 @@ private:
     
     // Connection Successful
     return true;
+  }
+
+  void setMagneticDisturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, 
+                         std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+  {
+    try {
+      vs_->magneticDisturbancePresent(request->data);
+      response->message = std::string("Known Magnetic Disturbance: ") + std::to_string(request->data);
+      response->success = true;
+    } catch (std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Error setting known disturbance: %s", e.what());
+      response->message = std::string("Error setting known disturbance: ") + e.what();
+      response->success = false;
+    }
   }
 
   /**
@@ -1456,6 +1476,9 @@ private:
   rclcpp::Publisher<vectornav_msgs::msg::AttitudeGroup>::SharedPtr pub_attitude_;
   rclcpp::Publisher<vectornav_msgs::msg::InsGroup>::SharedPtr pub_ins_;
   rclcpp::Publisher<vectornav_msgs::msg::GpsGroup>::SharedPtr pub_gps2_;
+
+  /// Services
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr srv_mag_disturb_;
 
   /// Action servers for calibration
   rclcpp_action::Server<vectornav_msgs::action::MagCal>::SharedPtr server_mag_cal_;
