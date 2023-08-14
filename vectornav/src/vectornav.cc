@@ -69,6 +69,10 @@ public:
     // Flag to adjust ROS time stamps
     adjustROSTimeStamp_ = declare_parameter<bool>("adjust_ros_timestamp", false);
 
+
+    // Flag to signal mag disturbance
+    auto known_mag_disturb_ = declare_parameter<bool>("KnownMagDisturbance", false);
+
     // Async Output Type (ASCII)
     // 5.2.7
     declare_parameter<int>("AsyncDataOutputType", vn::protocol::uart::AsciiAsync::VNOFF);
@@ -188,6 +192,9 @@ public:
 
     // Connect to the sensor
     connect(port, baud);
+
+    // Set Mag Disturbance 
+    vs_->magneticDisturbancePresent(known_mag_disturb_);
 
     // Monitor Connection
     if (reconnect_ms > 0ms) {
